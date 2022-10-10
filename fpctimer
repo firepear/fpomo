@@ -5,6 +5,13 @@ fpctimer_help() {
 cat <<EOF
 usage: fpctimer <OPTIONS> [MINUTES]
 
+  --alert [CMD]
+    The command to run when time is up.
+    Default: '${alert}'
+
+  --count [NUM]
+    How many times to run the alert cmd. Default: ${count}
+
   --mark [CHAR]
     Set the character which will be used to flood the screen and
     visually represent time remaining. Default: '${mark}'
@@ -71,6 +78,12 @@ COLUMNS=$(( COLUMNS - 1 ))
 fpc_config="${HOME}/.fpctimerrc"
 mark='⋅'
 sleep=5
+count=3
+os=$(uname)
+alert="#NONE"
+if [[ "${os}" == "Darwin" ]]; then
+    alert='afplay /System/Library/Sounds/Glass.aiff'
+fi
 
 # process args
 while [[ "${1}" =~ ^-- ]]; do
@@ -81,6 +94,14 @@ while [[ "${1}" =~ ^-- ]]; do
             ;;
         "--config")
             # TODO
+            ;;
+        "--alert")
+            alert="${2}"
+            shift
+            ;;
+        "--count")
+            count="${2}"
+            shift
             ;;
         "--mark")
             mark="${2}"
@@ -130,10 +151,21 @@ while [[ "${timer_secs}" -gt "0" ]]; do
     disp_time=$(fpc_disptime)
     # draw the screen
     fpc_drawscreen
-    # subtract one from timer
-    timer_secs=$(( timer_secs - sleep ))
-    timer_elap=$(( timer_elap + sleep ))
+    # subtract sleep period from timer
+    if [[ "${timer_secs}" -ge "${sleep}" ]]; then
+        timer_secs=$(( timer_secs - sleep ))
+        timer_elap=$(( timer_elap + sleep ))
+    else
+        timer_elap=$(( timer_elap + timer_secs ))
+        sleep="${timer_secs}"
+        timer_secs=$(( timer_secs - sleep ))
+    fi
     # snooze
     sleep ${sleep}
 done
-clear
+
+disp_time=$(fpc_disptime)
+fpc_drawscreen
+for i in $(seq 1 ${count}); do
+    ${alert}
+done
