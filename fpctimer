@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+# usage notification
+fpctimer_help() {
+cat <<EOF
+usage: fpctimer <OPTIONS> [MINUTES]
+
+  --mark [CHAR]
+    Set the character which will be used to flood the screen and
+    visually represent time remaining
+
+  --sleep [SECS]
+    How many seconds to sleep between screen updates
+
+EOF
+}
+
+fpc_disptime() {
+    mins=$(( timer_secs / 60 ))
+    secs=$(( timer_secs % 60 ))
+    printf '  %02d:%02d' ${mins} ${secs}
+}
+
+fpc_drawscreen() {
+    cur_row=1
+
+    # what percentage of time is remaining?
+    tp=$(echo "scale=5; 1 - ${timer_elap} / ${total_secs}" | bc -l)
+    # and so how many marks are remaining and how many will be blanked?
+    marks_remaining=$(echo "scale=4; ${tot_marks} * ${tp}" | bc -l | cut -d'.' -f1)
+    marks_blank=$(( tot_marks - marks_remaining ))
+    clear
+    while [[ ! "${cur_row}" -gt "${LINES}" ]]; do
+        line=""
+        cur_pos=$(( (cur_row - 1) * COLUMNS ))
+        end_pos=$(( cur_pos + COLUMNS ))
+        if [[ ! "${marks_blank}" -lt "${end_pos}" ]]; then
+            # blank line
+            for i in $(seq 1 ${COLUMNS}); do
+                line="${line} "
+            done
+        elif [[ "${marks_blank}" -gt "${cur_pos}" ]] && [[ "${marks_blank}" -lt "${end_pos}" ]]; then
+            # partial line
+            line_marks=$(( end_pos - marks_blank ))
+            for i in $( seq 1 $(( COLUMNS - line_marks )) ); do
+                line="${line} "
+            done
+            for i in $(seq 1 ${line_marks}); do
+                line="${line}${mark}"
+            done
+        else
+            # full line
+            for i in $(seq 1 ${COLUMNS}); do
+                line="${line}${mark}"
+            done
+        fi
+        if [[ "${cur_row}" == "${LINES}" ]]; then
+            echo "${line:0:$(( ${#line} - ${#disp_time} ))}${disp_time}"
+        else
+            echo "${line}"
+        fi
+        cur_row=$(( cur_row + 1 ))
+    done
+}
+
+# set defaults
+LINES=$(tput lines)
+LINES=$(( LINES - 1 ))
+COLUMNS=$(tput cols)
+COLUMNS=$(( COLUMNS - 1 ))
+fpc_config="${HOME}/.fpctimerrc"
+mark='.'
+sleep=5
+
+# process args
+while [[ "${1}" =~ ^-- ]]; do
+    case "${1}" in
+        "--help")
+            fpctimer_help
+            exit 1
+            ;;
+        "--config")
+            # TODO
+            ;;
+        "--mark")
+            mark="${2}"
+            shift
+            ;;
+        "--sleep")
+            sleep="${2}"
+            shift
+            ;;
+    esac
+    shift
+done
+
+# last of all should come the number of minutes we want to run
+# for. keep a copy for display purposes, but convert to seconds for
+# internal use. also set elapsed time while we're here.
+if [[ "${1}" == "" ]]; then
+    echo "no timer value given; nothing to do."
+    exit 0
+fi
+total_secs=$(( ${1} * 60 ))
+timer_secs=${total_secs}
+timer_elap=0
+disp_time=$(fpc_disptime)
+shift
+# if we got passed something nonsensical (not a number) as a value,
+# we'll get the answer zero. in that case, we can quit right now.
+if [[ "${timer_secs}" == "0" ]]; then
+    echo "no timer value given; nothing to do."
+    exit 0
+fi
+# finally, handle anything that might be left over
+if [[ "${1}" != "" ]]; then
+    echo "unknown arg '${1}'. try '--help' for usage info"
+fi
+
+
+# how many marks are gonna fit? first, work out the number of
+# character cells on screen
+tot_marks=$(( LINES * COLUMNS ))
+# subtract the length of the time remaining
+tot_marks=$(( tot_marks - ${#disp_time} ))
+
+while [[ "${timer_secs}" -gt "0" ]]; do
+    # turn our seconds count into minutes and seconds for display
+    # purposes
+    disp_time=$(fpc_disptime)
+    # draw the screen
+    fpc_drawscreen
+    # subtract one from timer
+    timer_secs=$(( timer_secs - sleep ))
+    timer_elap=$(( timer_elap + sleep ))
+    # snooze
+    sleep ${sleep}
+done
+clear
