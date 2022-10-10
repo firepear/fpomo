@@ -7,10 +7,10 @@ usage: fpctimer <OPTIONS> [MINUTES]
 
   --mark [CHAR]
     Set the character which will be used to flood the screen and
-    visually represent time remaining
+    visually represent time remaining. Default: '${mark}'
 
   --sleep [SECS]
-    How many seconds to sleep between screen updates
+    How many seconds to sleep between screen updates. Default: ${sleep}
 
 EOF
 }
@@ -69,7 +69,7 @@ LINES=$(( LINES - 1 ))
 COLUMNS=$(tput cols)
 COLUMNS=$(( COLUMNS - 1 ))
 fpc_config="${HOME}/.fpctimerrc"
-mark='.'
+mark='⋅'
 sleep=5
 
 # process args
