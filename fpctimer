@@ -6,8 +6,10 @@ cat <<EOF
 usage: fpctimer <OPTIONS> [MINUTES]
 
   --alert [CMD]
-    The command to run when time is up.
-    Default: '${alert}'
+    The command to run when time is up. No default.
+
+  --config [PATH]
+    Configuration file. Default is ${config}
 
   --count [NUM]
     How many times to run the alert cmd. Default: ${count}
@@ -19,6 +21,10 @@ usage: fpctimer <OPTIONS> [MINUTES]
   --sleep [SECS]
     How many seconds to sleep between screen updates. Default: ${sleep}
 
+  --bg, --fg, --td [ANSI_CODE]
+    Set the background, foreground, and time display colors. 'bg' and
+    'fg' should be singles; 'td' can be a full spec. Defaults are
+    '${bgc}', '${fgc}', '${tdc}'
 EOF
 }
 
@@ -65,9 +71,9 @@ fpc_drawscreen() {
             done
         fi
         if [[ "${cur_row}" == "${appl}" ]]; then
-            line="${line:0:$(( ${#line} - ${#disp_time} ))}\033[1;36m${disp_time}"
+            line="${line:0:$(( ${#line} - ${#disp_time} ))}\033[${tdc}m${disp_time}"
         fi
-        echo -e "\033[37;40m${line}\033[0m"
+        echo -e "\033[${fgc};${bgc}m${line}\033[0m"
         cur_row=$(( cur_row + 1 ))
     done
     if [[ "${debug}" == "true" ]]; then
@@ -80,7 +86,8 @@ LINES=$(tput lines)
 appl=$(( LINES - 1 ))
 COLUMNS=$(tput cols)
 appc=$(( COLUMNS - 1 ))
-fpc_config="${HOME}/.fpctimerrc"
+
+config="${HOME}/.fpctimerrc"
 debug="false"
 mark='⋅'
 sleep=5
@@ -90,6 +97,9 @@ alert=""
 if [[ "${os}" == "Darwin" ]]; then
     alert='afplay /System/Library/Sounds/Glass.aiff'
 fi
+bgc="40"
+fgc="37"
+tdc="1;36"
 
 # process args
 while [[ "${1}" =~ ^- ]]; do
@@ -118,6 +128,18 @@ while [[ "${1}" =~ ^- ]]; do
             ;;
         "--sleep")
             sleep="${2}"
+            shift
+            ;;
+        "--bg")
+            bgc="${2}"
+            shift
+            ;;
+        "--fg")
+            fgc="${2}"
+            shift
+            ;;
+        "--td")
+            tdc="${2}"
             shift
             ;;
         *)
