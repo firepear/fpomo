@@ -65,10 +65,9 @@ fpc_drawscreen() {
             done
         fi
         if [[ "${cur_row}" == "${appl}" ]]; then
-            echo "${line:0:$(( ${#line} - ${#disp_time} ))}${disp_time}"
-        else
-            echo "${line}"
+            line="${line:0:$(( ${#line} - ${#disp_time} ))}\033[1;36m${disp_time}"
         fi
+        echo -e "\033[37;40m${line}\033[0m"
         cur_row=$(( cur_row + 1 ))
     done
     if [[ "${debug}" == "true" ]]; then
