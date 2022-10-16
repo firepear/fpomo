@@ -8,9 +8,6 @@ usage: fpctimer <OPTIONS> [MINUTES]
   --alert [CMD]
     The command to run when time is up. No default.
 
-  --config [PATH]
-    Configuration file. Default is ${config}
-
   --count [NUM]
     How many times to run the alert cmd. Default: ${count}
 
@@ -107,9 +104,6 @@ while [[ "${1}" =~ ^- ]]; do
         "--help")
             fpctimer_help
             exit 1
-            ;;
-        "--config")
-            # TODO
             ;;
         "--debug")
             debug="true"
