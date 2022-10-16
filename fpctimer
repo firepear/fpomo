@@ -49,6 +49,9 @@ fpc_drawscreen() {
         elif [[ "${marks_blank}" -gt "${cur_pos}" ]] && [[ "${marks_blank}" -lt "${end_pos}" ]]; then
             # partial line
             line_marks=$(( end_pos - marks_blank ))
+            if [[ "${debug}" == "true" ]]; then
+                echo "mb:${marks_blank} cp:${cur_pos} ep:${end_pos} lm:${line_marks}"
+            fi
             for i in $( seq 1 $(( COLUMNS - line_marks )) ); do
                 line="${line} "
             done
@@ -68,6 +71,9 @@ fpc_drawscreen() {
         fi
         cur_row=$(( cur_row + 1 ))
     done
+    if [[ "${debug}" == "true" ]]; then
+        echo "L:${LINES} C:${COLUMNS} cur:${cur_row} ts:${timer_secs} te:${timer_elap} tp:${tp} tm:${tot_marks} mr:${marks_remaining} mb:${marks_blank} lm:${line_marks} cp:${cur_pos} ep:${end_pos}"
+    fi
 }
 
 # set defaults
@@ -76,17 +82,18 @@ LINES=$(( LINES - 1 ))
 COLUMNS=$(tput cols)
 COLUMNS=$(( COLUMNS - 1 ))
 fpc_config="${HOME}/.fpctimerrc"
+debug="false"
 mark='⋅'
 sleep=5
 count=3
 os=$(uname)
-alert="#NONE"
+alert=""
 if [[ "${os}" == "Darwin" ]]; then
     alert='afplay /System/Library/Sounds/Glass.aiff'
 fi
 
 # process args
-while [[ "${1}" =~ ^-- ]]; do
+while [[ "${1}" =~ ^- ]]; do
     case "${1}" in
         "--help")
             fpctimer_help
@@ -94,6 +101,9 @@ while [[ "${1}" =~ ^-- ]]; do
             ;;
         "--config")
             # TODO
+            ;;
+        "--debug")
+            debug="true"
             ;;
         "--alert")
             alert="${2}"
@@ -110,6 +120,10 @@ while [[ "${1}" =~ ^-- ]]; do
         "--sleep")
             sleep="${2}"
             shift
+            ;;
+        *)
+            echo "unknown arg '${1}'. try '--help' for usage info"
+            exit 1
             ;;
     esac
     shift
@@ -133,9 +147,11 @@ if [[ "${timer_secs}" == "0" ]]; then
     echo "no timer value given; nothing to do."
     exit 0
 fi
-# finally, handle anything that might be left over
-if [[ "${1}" != "" ]]; then
-    echo "unknown arg '${1}'. try '--help' for usage info"
+# bail if bc isn't around
+test=$(echo "5+5" | bc)
+if [[ "${test}" != "10" ]]; then
+    echo "error: 'bc' not found in path"
+    exit 1
 fi
 
 
@@ -166,6 +182,8 @@ done
 
 disp_time=$(fpc_disptime)
 fpc_drawscreen
-for i in $(seq 1 ${count}); do
-    ${alert}
+for i in $(seq 1 "${count}"); do
+    if [[ "${alert}" != "" ]]; then
+        ${alert}
+    fi
 done
