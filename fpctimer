@@ -101,38 +101,38 @@ tdc="1;36"
 # process args
 while [[ "${1}" =~ ^- ]]; do
     case "${1}" in
-        "--help")
+        --help)
             fpctimer_help
             exit 1
             ;;
-        "--debug")
+        --debug)
             debug="true"
             ;;
-        "--alert")
+        --alert)
             alert="${2}"
             shift
             ;;
-        "--count")
+        --count)
             count="${2}"
             shift
             ;;
-        "--mark")
+        --mark)
             mark="${2}"
             shift
             ;;
-        "--sleep")
+        --sleep)
             sleep="${2}"
             shift
             ;;
-        "--bg")
+        --bg|-bg)
             bgc="${2}"
             shift
             ;;
-        "--fg")
+        --fg|-fg)
             fgc="${2}"
             shift
             ;;
-        "--td")
+        --td|-td)
             tdc="${2}"
             shift
             ;;
