@@ -6,23 +6,72 @@ cat <<EOF
 usage: fpctimer <OPTIONS> [MINUTES]
 
   --alert [CMD]
-    The command to run when time is up. No default.
+    The command to run when time is up. Value: '${alert}'
+
+  --alert_tone [FILEPATH]
+    Audio file to use as the alert tone when time is up
+    Value: '${alert_tone}'
 
   --count [NUM]
-    How many times to run the alert cmd. Default: ${count}
+    How many times to run the alert cmd. Value: ${count}
+
+  --forever [true | false]
+    Play the alert tone until killed with C-c. Value: '${alert_forever}'
 
   --mark [CHAR]
-    Set the character which will be used to flood the screen and
-    visually represent time remaining. Default: '${mark}'
+    Set the character used to flood the screen, representing time
+    remaining. Value: '${mark}'
 
   --sleep [SECS]
-    How many seconds to sleep between screen updates. Default: ${sleep}
+    How many seconds to sleep between screen updates. Value: ${sleep}
 
-  --bg, --fg, --td [ANSI_CODE]
-    Set the background, foreground, and time display colors. 'bg' and
-    'fg' should be singles; 'td' can be a full spec. Defaults are
+  --bg, --fg, --td [ANSI_COLOR_SPEC]
+    Set the background, foreground, and time display colors. Values are
     '${bgc}', '${fgc}', '${tdc}'
 EOF
+}
+
+fpc_readconfig() {
+    while read -r line; do
+        k=$(echo ${line} | cut -d'=' -f1)
+        v=$(echo ${line} | cut -d'=' -f2)
+        case "${k}" in
+            alert)
+                alert="${v}"
+                ;;
+            alert_tone)
+                alert_tone="${v}"
+                ;;
+            count)
+                count="${v}"
+                ;;
+            forever)
+                alert_forever="${v}"
+                ;;
+            mark)
+                mark="${v}"
+                ;;
+            sleep)
+                sleep="${v}"
+                ;;
+            "bg")
+                bgc="${v}"
+                ;;
+            "fg")
+                fgc="${v}"
+                ;;
+            td)
+                tdc="${v}"
+                ;;
+            "" | \#*)
+                # do nothing
+                ;;
+            *)
+                echo "unknown config opt '${k}' in ${HOME}/.fpctimerrc"
+                exit 1
+                ;;
+        esac
+    done < "${HOME}/.fpctimerrc"
 }
 
 fpc_disptime() {
@@ -84,19 +133,23 @@ appl=$(( LINES - 1 ))
 COLUMNS=$(tput cols)
 appc=$(( COLUMNS - 1 ))
 
-config="${HOME}/.fpctimerrc"
 debug="false"
 mark='⋅'
 sleep=5
 count=3
 os=$(uname)
-alert=""
+alert="mpg123 -q"
+alert_tone="./assets/beep-beep-6151.mp3"
+alert_forever="false"
 if [[ "${os}" == "Darwin" ]]; then
-    alert='afplay /System/Library/Sounds/Glass.aiff'
+    alert='afplay'
+    alert_tone='/System/Library/Sounds/Glass.aiff'
 fi
 bgc="40"
 fgc="37"
 tdc="1;36"
+
+fpc_readconfig
 
 # process args
 while [[ "${1}" =~ ^- ]]; do
@@ -115,6 +168,9 @@ while [[ "${1}" =~ ^- ]]; do
         --count)
             count="${2}"
             shift
+            ;;
+        --forever)
+            alert_forever="true"
             ;;
         --mark)
             mark="${2}"
@@ -197,8 +253,17 @@ done
 
 disp_time=$(fpc_disptime)
 fpc_drawscreen
-for i in $(seq 1 "${count}"); do
+if [[ "${alert_forever}" == "true" ]]; then
     if [[ "${alert}" != "" ]]; then
-        ${alert}
+        while [[ true ]]; do
+            ${alert} "${alert_tone}" &
+            sleep 1
+        done
     fi
-done
+else
+    for i in $(seq 1 "${count}"); do
+        if [[ "${alert}" != "" ]]; then
+            ${alert} "${alert_tone}"
+        fi
+    done
+fi

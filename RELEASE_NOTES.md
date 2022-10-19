@@ -1,6 +1,9 @@
-## 0.3.0 -- 2022-10-16
+## 0.3.0 -- 2022-10-19
 
-- Colors
+- mpg123 is now the default alert util except on Mac OS
+- Default alert sound included
+- `--forever` alert mode
+- Color opts
 - Config file
 
 ## 0.2.0 -- 2022-10-15

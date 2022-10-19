@@ -1,0 +1,11 @@
+# format is k=v
+# no spaces
+#
+# allowed keys: alert, alert_tone, count, forever, mark, sleep, bg, fg, td
+#
+# command line options will override these values
+
+alert_tone=/path/to/audio/file.mp3
+forever=true
+fg=35
+td=1;37
