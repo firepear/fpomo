@@ -1,8 +1,8 @@
-# fpctimer
+# fpomo
 Console visual timer app
 
 ```
-usage: fpctimer <OPTIONS> [MINUTES]
+usage: fpomo <OPTIONS> [MINUTES]
 
   --alert [CMD]
     The command to run when time is up. Value: 'afplay'
@@ -31,7 +31,7 @@ usage: fpctimer <OPTIONS> [MINUTES]
 
 - Unices other than Mac OS use `mpg123 -q` as the default alert
   command, and use an included audio file as the default tone
-- Config file is `~/.fpctimerrc`; an example is in `assets`
+- Config file is `~/.fpomorc`; an example is in `assets`
 
 ## Notes
 

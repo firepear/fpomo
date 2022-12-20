@@ -1,5 +1,5 @@
-# fpctimer
-Console visual timer app
+# fpomo
+Console pomodoro timer
 
 See the pure bash version in `./shell` for now.
 

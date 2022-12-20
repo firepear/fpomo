@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # usage notification
-fpctimer_help() {
+fpomo_help() {
 cat <<EOF
-usage: fpctimer <OPTIONS> [MINUTES]
+usage: fpomo <OPTIONS> [MINUTES]
 
   --alert [CMD]
     The command to run when time is up. Value: '${alert}'
@@ -67,11 +67,11 @@ fpc_readconfig() {
                 # do nothing
                 ;;
             *)
-                echo "unknown config opt '${k}' in ${HOME}/.fpctimerrc"
+                echo "unknown config opt '${k}' in ${HOME}/.fpomorc"
                 exit 1
                 ;;
         esac
-    done < "${HOME}/.fpctimerrc"
+    done < "${HOME}/.fpomorc"
 }
 
 fpc_disptime() {
@@ -149,7 +149,7 @@ bgc="40"
 fgc="37"
 tdc="1;36"
 
-if [[ -e "${HOME}/.fpctimerrc" ]]; then
+if [[ -e "${HOME}/.fpomorc" ]]; then
     fpc_readconfig
 fi
 
@@ -157,7 +157,7 @@ fi
 while [[ "${1}" =~ ^- ]]; do
     case "${1}" in
         --help)
-            fpctimer_help
+            fpomo_help
             exit 1
             ;;
         --debug)
