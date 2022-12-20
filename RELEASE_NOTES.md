@@ -1,3 +1,9 @@
+## 0.4.0 -- 2022-12-20
+
+- Initial implementation of Go version
+- Fix for shell version attempting to read config when it did not
+  exist
+
 ## 0.3.0 -- 2022-10-19
 
 - mpg123 is now the default alert util except on Mac OS
