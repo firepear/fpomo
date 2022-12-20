@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"log"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 func main() {
-	fpcStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorPurple)
+	fpcStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.NewRGBColor(230, 230, 200))
 
 	// Initialize screen
 	s, err := tcell.NewScreen()
@@ -19,6 +19,7 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 	s.SetStyle(fpcStyle)
+	s.HideCursor()
 	s.Clear()
 
 	quit := func() {
@@ -50,8 +51,9 @@ func main() {
 			} else if ev.Key() == tcell.KeyCtrlL {
 				s.Sync()
 			} else if ev.Rune() == 'Q' || ev.Rune() == 'q' {
-				break
+				goto THEEND
 			}
 		}
 	}
+THEEND:
 }
