@@ -134,7 +134,7 @@ COLUMNS=$(tput cols)
 appc=$(( COLUMNS - 1 ))
 
 debug="false"
-mark='⋅'
+mark='·'
 sleep=5
 count=3
 os=$(uname)
