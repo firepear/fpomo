@@ -149,7 +149,9 @@ bgc="40"
 fgc="37"
 tdc="1;36"
 
-fpc_readconfig
+if [[ -e "${HOME}/.fpctimerrc" ]]; then
+    fpc_readconfig
+fi
 
 # process args
 while [[ "${1}" =~ ^- ]]; do
